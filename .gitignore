@@ -44,4 +44,10 @@ logs/
 ### Application ###
 *.log
 .env
-application-local.yml 
+application-local.yml
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl 

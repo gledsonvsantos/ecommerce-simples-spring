@@ -320,95 +320,76 @@ The project uses:
 }
 ```
 
-## Executing Kubernetes Locally
+## Running Locally
 
-### Prerequisites
+The application can be run locally in two ways: using Docker Compose or Kubernetes (Minikube).
+
+### Option 1: Docker Compose
+
+This is the simplest way to run the application locally. It will start all required services (application, database, Prometheus, and Grafana) using Docker Compose.
+
+Prerequisites:
+- Docker Desktop installed and running
+- Java 17 or higher installed
+
+To run:
+```bash
+./infrastructure/docker/run-local.sh
+```
+
+This will:
+1. Build the application
+2. Start all containers
+3. Set up monitoring
+4. Show application logs
+
+### Option 2: Kubernetes (Minikube)
+
+This option runs the application in a local Kubernetes cluster using Minikube.
+
+Prerequisites:
 - Docker Desktop installed and running
 - Minikube installed
 - kubectl installed
+- Java 17 or higher installed
 
-### Step-by-Step
-
-1. Start Minikube:
+To run:
 ```bash
-minikube start
+./infrastructure/k8s/run-local.sh
 ```
 
-2. Check Minikube status:
+This will:
+1. Start Minikube if not running
+2. Build the application
+3. Create necessary namespaces
+4. Deploy all components to Kubernetes
+5. Set up port forwarding
+6. Show application logs
+
+### Accessing the Application
+
+Both options will expose the following endpoints:
+
+- API: http://localhost:8080
+- Grafana: http://localhost:3000
+- Prometheus: http://localhost:9090
+
+### Stopping the Application
+
+For Docker Compose:
 ```bash
-minikube status
+cd infrastructure/docker && docker-compose down
 ```
 
-3. Configure Docker environment to use Minikube:
+For Kubernetes:
 ```bash
-eval $(minikube docker-env)
+# Stop port forwarding (Ctrl+C)
+# Then run the cleanup script:
+./infrastructure/k8s/cleanup.sh
 ```
 
-4. Build Docker image for the application:
-```bash
-cd app && docker build -t ecommerce-api:latest .
-```
-
-5. Create namespace for the application:
-```bash
-kubectl create namespace ecommerce
-```
-
-6. Apply Kubernetes configurations:
-```bash
-kubectl apply -k infrastructure/k8s/base
-```
-
-7. Check pod status:
-```bash
-kubectl get pods -n ecommerce
-```
-
-8. Get service URL:
-```bash
-minikube service ecommerce-api -n ecommerce --url
-```
-
-### Useful Commands
-
-- View pod logs:
-```bash
-kubectl logs -n ecommerce -l app=ecommerce-api
-```
-
-- Access Kubernetes dashboard:
-```bash
-minikube dashboard
-```
-
-- Check service status:
-```bash
-kubectl get services -n ecommerce
-```
-
-- Stop Minikube:
-```bash
-minikube stop
-```
-
-- Delete Minikube cluster:
-```bash
-minikube delete
-```
-
-### Troubleshooting
-
-1. If pods don't start, check logs:
-```bash
-kubectl describe pod -n ecommerce -l app=ecommerce-api
-```
-
-2. To restart a deployment:
-```bash
-kubectl rollout restart deployment ecommerce-api -n ecommerce
-```
-
-3. To check namespace events:
-```bash
-kubectl get events -n ecommerce
-```
+The cleanup script will:
+1. Delete all resources in the ecommerce namespace
+2. Delete all resources in the monitoring namespace
+3. Delete both namespaces
+4. Provide instructions for stopping or deleting the Minikube cluster
