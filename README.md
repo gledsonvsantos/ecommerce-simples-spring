@@ -260,12 +260,26 @@ This project is licensed under the MIT License.
 
 ## Project Structure
 
-The project follows Clean Architecture principles with the following layers:
+The project is organized into two main directories:
 
-- **Domain**: Core business logic and domain models
-- **Application**: Use cases and business rules
-- **Infrastructure**: External concerns like database and external services
-- **Presentation**: Controllers, DTOs, and API endpoints
+### App
+Contains the Spring Boot application:
+- **src/**: Application source code with Clean Architecture layers
+  - Domain: Core business logic and domain models
+  - Application: Use cases and business rules
+  - Infrastructure: External concerns like database and external services
+  - Presentation: Controllers, DTOs, and API endpoints
+- **Dockerfile**: Container definition for the application
+- **docker-compose.yml**: Local development environment setup
+- **pom.xml**: Maven dependencies and build configuration
+- **load-test.sh**: Load testing script for the application endpoints
+
+### Infrastructure
+Contains all infrastructure-related configurations:
+- **k8s/**: Kubernetes manifests
+  - base/: Base Kubernetes configurations
+  - monitoring/: Prometheus and Grafana setup
+- **terraform/**: Infrastructure as Code for cloud deployment
 
 ## Available Endpoints
 
@@ -332,7 +346,7 @@ eval $(minikube docker-env)
 
 4. Build Docker image for the application:
 ```bash
-docker build -t ecommerce-api:latest .
+cd app && docker build -t ecommerce-api:latest .
 ```
 
 5. Create namespace for the application:
@@ -397,4 +411,4 @@ kubectl rollout restart deployment ecommerce-api -n ecommerce
 3. To check namespace events:
 ```bash
 kubectl get events -n ecommerce
-``` 
+```
