@@ -12,14 +12,20 @@ A simple e-commerce API built with Spring Boot, following Clean Architecture and
 - OpenAPI/Swagger for API documentation
 - Spring Boot Actuator for monitoring
 - Docker and Docker Compose for development environment
+- Terraform for Infrastructure as Code
+- Kubernetes (EKS) for container orchestration
 
 ## Prerequisites
 
 - Java 17 or higher
 - Docker and Docker Compose
 - Maven
+- AWS CLI configured
+- Terraform
+- kubectl
+- Minikube (for local development)
 
-## Getting Started
+## Local Development
 
 1. Clone the repository:
 ```bash
@@ -37,7 +43,81 @@ docker-compose up -d
 ./mvnw spring-boot:run
 ```
 
-The application will be available at `http://localhost:8080`
+## Infrastructure Setup
+
+### Local Kubernetes (Minikube)
+
+1. Start Minikube:
+```bash
+minikube start
+```
+
+2. Build and load the Docker image:
+```bash
+eval $(minikube docker-env)
+docker build -t ecommerce-api:latest .
+```
+
+3. Deploy to Minikube:
+```bash
+kubectl apply -k infrastructure/k8s/base
+```
+
+### AWS Infrastructure
+
+1. Create an S3 bucket for Terraform state:
+```bash
+aws s3 mb s3://ecommerce-terraform-state
+```
+
+2. Initialize Terraform:
+```bash
+cd infrastructure/terraform/environments/prod
+terraform init
+```
+
+3. Plan and apply the infrastructure:
+```bash
+terraform plan
+terraform apply
+```
+
+4. Configure kubectl for EKS:
+```bash
+aws eks update-kubeconfig --name prod-ecommerce --region us-east-1
+```
+
+5. Deploy the application:
+```bash
+kubectl apply -k infrastructure/k8s/base
+```
+
+## CI/CD Pipeline
+
+The project includes a GitHub Actions workflow that:
+1. Builds and tests the application
+2. Builds a Docker image
+3. Pushes the image to Amazon ECR
+4. Deploys to EKS
+
+Required GitHub Secrets:
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+
+## Infrastructure Components
+
+### AWS Resources (managed by Terraform)
+- VPC with public and private subnets
+- EKS cluster
+- Node group with auto-scaling
+- Security groups
+- IAM roles and policies
+
+### Kubernetes Resources
+- Namespace
+- Deployment with 3 replicas
+- LoadBalancer Service
+- Secrets for database credentials
 
 ## Testing the API
 
@@ -87,17 +167,24 @@ curl -X DELETE http://localhost:8080/api/v1/products/{id}
 ```
 Replace `{id}` with the actual product ID.
 
-## API Documentation
+## Monitoring and Observability
 
-Once the application is running, you can access:
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- OpenAPI documentation: `http://localhost:8080/api-docs`
+- Kubernetes Dashboard: `minikube dashboard` (local) or EKS Console (AWS)
+- Application metrics: `/actuator/metrics`
+- Health check: `/actuator/health`
+- API Documentation: `/swagger-ui.html`
 
-## Monitoring
+## Contributing
 
-Health and metrics endpoints are available through Spring Boot Actuator:
-- Health check: `http://localhost:8080/actuator/health`
-- Metrics: `http://localhost:8080/actuator/metrics`
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is licensed under the MIT License.
 
 ## Project Structure
 
