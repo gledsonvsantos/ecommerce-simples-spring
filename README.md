@@ -133,10 +133,33 @@ To run:
 This will:
 1. Start Minikube if not running
 2. Build the application
-3. Create necessary namespaces
-4. Deploy all components to Kubernetes
-5. Set up port forwarding
+3. Create necessary namespaces (ecommerce and monitoring)
+4. Deploy all components to Kubernetes:
+   - Application (3 replicas)
+   - PostgreSQL database (StatefulSet)
+   - Prometheus for metrics collection
+   - Grafana for metrics visualization
+5. Set up port forwarding for all services
 6. Show application logs
+
+The script will display the URLs for accessing each service:
+- API: http://localhost:8080
+- Grafana: http://localhost:3000 (admin/admin)
+- Prometheus: http://localhost:9090
+
+To check the status of the deployment:
+```bash
+# View all pods
+kubectl get pods -n ecommerce
+kubectl get pods -n monitoring
+
+# View services
+kubectl get svc -n ecommerce
+kubectl get svc -n monitoring
+
+# View logs
+kubectl logs -n ecommerce -l app=ecommerce-api -f
+```
 
 ### Accessing the Application
 
