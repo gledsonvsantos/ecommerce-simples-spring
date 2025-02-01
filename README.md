@@ -30,12 +30,15 @@ Contains the Spring Boot application:
   - Infrastructure: External concerns like database and external services
   - Presentation: Controllers, DTOs, and API endpoints
 - **Dockerfile**: Container definition for the application
-- **docker-compose.yml**: Local development environment setup
 - **pom.xml**: Maven dependencies and build configuration
 - **load-test.sh**: Load testing script for the application endpoints
 
 ### Infrastructure
 Contains all infrastructure-related configurations:
+- **docker/**: Docker-related configurations
+  - docker-compose.yml: Local development environment setup
+  - prometheus.yml: Prometheus configuration
+  - run-local.sh: Script to run the application locally
 - **k8s/**: Kubernetes manifests
   - base/: Base Kubernetes configurations
   - monitoring/: Prometheus and Grafana setup
@@ -98,9 +101,19 @@ To run:
 
 This will:
 1. Build the application
-2. Start all containers
-3. Set up monitoring
+2. Start all containers (PostgreSQL, Prometheus, Grafana, and the application)
+3. Set up monitoring with Prometheus and Grafana
 4. Show application logs
+
+The script will display the URLs for accessing each service:
+- API: http://localhost:8080
+- Grafana: http://localhost:3000 (admin/admin)
+- Prometheus: http://localhost:9090
+
+To stop the application:
+```bash
+cd infrastructure/docker && docker-compose down
+```
 
 ### Option 2: Kubernetes (Minikube)
 
