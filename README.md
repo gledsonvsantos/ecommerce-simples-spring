@@ -174,6 +174,78 @@ Replace `{id}` with the actual product ID.
 - Health check: `/actuator/health`
 - API Documentation: `/swagger-ui.html`
 
+## Monitoring with Grafana
+
+### Metrics Dashboard
+
+The project includes a custom Grafana dashboard for application monitoring. The dashboard is located at `infrastructure/k8s/monitoring/grafana/dashboards/ecommerce-metrics.json`.
+
+#### Available Metrics
+
+The dashboard includes the following panels:
+
+1. **Request Rate per Minute (by Endpoint)**
+   - Time series visualization
+   - Shows the number of requests per minute for each endpoint
+   - Includes calculations for maximum, sum, and last value
+
+2. **Total Requests by Endpoint**
+   - Bar gauge visualization
+   - Displays the accumulated total of requests per endpoint
+
+3. **Request Latency**
+   - Heatmap visualization
+   - Shows the distribution of request latency
+   - Helps identify performance patterns
+
+4. **Error Rate (%)**
+   - Time series visualization
+   - Shows the percentage of errors (status 500) relative to total requests
+   - Useful for application health monitoring
+
+5. **Active Database Connections**
+   - Stat visualization
+   - Monitors the number of active database connections
+   - Important for resource management
+
+#### How to Import the Dashboard
+
+1. Access Grafana (http://localhost:3000)
+2. Navigate to Dashboards > Import
+3. Click on "Upload JSON file"
+4. Select the file `infrastructure/k8s/monitoring/grafana/dashboards/ecommerce-metrics.json`
+5. Configure the Prometheus datasource
+6. Click on "Import"
+
+#### Dashboard Settings
+
+- Auto-refresh: 5 seconds
+- Default time range: last 6 hours
+- Available variables: application="ecommerce"
+
+#### Prometheus Queries Used
+
+```promql
+# Request Rate
+sum(rate(http_server_requests_seconds_count{application="ecommerce"}[1m])) by (uri)
+
+# Total Requests
+sum(http_server_requests_seconds_count{application="ecommerce"}) by (uri)
+
+# Latency
+rate(http_server_requests_seconds_sum{application="ecommerce"}[1m]) 
+/ 
+rate(http_server_requests_seconds_count{application="ecommerce"}[1m])
+
+# Error Rate
+sum(rate(http_server_requests_seconds_count{application="ecommerce",status="500"}[1m])) 
+/ 
+sum(rate(http_server_requests_seconds_count{application="ecommerce"}[1m])) * 100
+
+# Database Connections
+hikaricp_connections_active{application="ecommerce"}
+```
+
 ## Contributing
 
 1. Fork the repository
@@ -232,4 +304,97 @@ The project uses:
     "details": ["Additional error details"],
     "timestamp": "2024-01-31 18:38:48"
 }
+```
+
+## Executing Kubernetes Locally
+
+### Prerequisites
+- Docker Desktop installed and running
+- Minikube installed
+- kubectl installed
+
+### Step-by-Step
+
+1. Start Minikube:
+```bash
+minikube start
+```
+
+2. Check Minikube status:
+```bash
+minikube status
+```
+
+3. Configure Docker environment to use Minikube:
+```bash
+eval $(minikube docker-env)
+```
+
+4. Build Docker image for the application:
+```bash
+docker build -t ecommerce-api:latest .
+```
+
+5. Create namespace for the application:
+```bash
+kubectl create namespace ecommerce
+```
+
+6. Apply Kubernetes configurations:
+```bash
+kubectl apply -k infrastructure/k8s/base
+```
+
+7. Check pod status:
+```bash
+kubectl get pods -n ecommerce
+```
+
+8. Get service URL:
+```bash
+minikube service ecommerce-api -n ecommerce --url
+```
+
+### Useful Commands
+
+- View pod logs:
+```bash
+kubectl logs -n ecommerce -l app=ecommerce-api
+```
+
+- Access Kubernetes dashboard:
+```bash
+minikube dashboard
+```
+
+- Check service status:
+```bash
+kubectl get services -n ecommerce
+```
+
+- Stop Minikube:
+```bash
+minikube stop
+```
+
+- Delete Minikube cluster:
+```bash
+minikube delete
+```
+
+### Troubleshooting
+
+1. If pods don't start, check logs:
+```bash
+kubectl describe pod -n ecommerce -l app=ecommerce-api
+```
+
+2. To restart a deployment:
+```bash
+kubectl rollout restart deployment ecommerce-api -n ecommerce
+```
+
+3. To check namespace events:
+```bash
+kubectl get events -n ecommerce
 ``` 
