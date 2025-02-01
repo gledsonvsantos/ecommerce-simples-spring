@@ -28,7 +28,19 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,prometheus,metrics
   endpoint:
     health:
-      show-details: always 
+      show-details: always
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 50ms,100ms,200ms,500ms
