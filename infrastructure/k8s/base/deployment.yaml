@@ -15,7 +15,8 @@ spec:
     spec:
       containers:
       - name: ecommerce-api
-        image: ${ECR_REPOSITORY_URL}:latest
+        image: ecommerce-api:latest
+        imagePullPolicy: Never
         ports:
         - containerPort: 8080
         env:
