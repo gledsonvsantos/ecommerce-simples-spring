@@ -1,12 +1,18 @@
 #!/bin/bash
 
+# Get the absolute path of the project root
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
 # Build the application
 echo "Building the application..."
-cd ../../app && ./mvnw clean package -DskipTests
+cd "$PROJECT_ROOT/app" && ./mvnw clean package -DskipTests
+
+# Return to the docker directory
+cd "$PROJECT_ROOT/infrastructure/docker"
 
 # Build and start containers
 echo "Starting containers..."
-cd ../infrastructure/docker && docker-compose up --build -d
+docker-compose up --build -d
 
 # Wait for services to be ready
 echo "Waiting for services to be ready..."
